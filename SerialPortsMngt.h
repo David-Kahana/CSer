@@ -6,8 +6,17 @@ class CSerialPortsMngt
 public:
 	CSerialPortsMngt();
 	~CSerialPortsMngt();
+
+    /**********************************************************************************************//**
+     * @brief   Scans the ports
+     * @author  David Kahana
+     * @date    04/10/2017
+     * @return  An int.
+     * @return  0   Success, task completed.
+     **************************************************************************************************/
 	int scanPorts();
 	int getPortsNames(vector<UINT>& ports, vector<wstring>& friendlyNames);
+    int listPorts();
 	CSerialPort* getPortByNumber(int num);
 	int saveJson();
 	int loadJson();
