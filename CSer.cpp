@@ -2,10 +2,13 @@
 //
 
 #include "stdafx.h"
+#include "SerialPortsMngt.h"
+// show all available COM ports
 
 
 int main()
 {
+	CSerialPortsMngt ports;
     return 0;
 }
 

@@ -9,6 +9,14 @@
 
 #include <stdio.h>
 #include <tchar.h>
+#include <Windows.h>
+#include <string>
+#include <setupapi.h>
+#include <atlbase.h>
+#include <vector>
+#include <AtlConv.h>
+#include <io.h>
+
 
 
 
