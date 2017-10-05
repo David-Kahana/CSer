@@ -1,7 +1,7 @@
 #pragma once
 
-#include "JsonSettings.h"
-
+//#include "JsonSettings.h"
+#include "FileUtil.h"
 using namespace std;
 
 enum SerialProps
@@ -64,7 +64,7 @@ public:
 	void setPropIndex(SerialProps prop, unsigned char index);
 	unsigned char getPropIndex(SerialProps prop);
 	int props2DCB(DCB& dcb);
-	int toJsonObject(Document& jsonDoc, Value& portJsonObj);
+	//int toJsonObject(Document& jsonDoc, Value& portJsonObj);
 private:
 	static int copyUCHARVector(vector<unsigned char>& src, vector<unsigned char>& dst);
 	int setSettableBaudRates(DWORD SettableBaud);
@@ -76,6 +76,6 @@ private:
 	unsigned char m_propertiesIndex[LAST_PROP];
 	vector<unsigned char> m_settablePropIndex[LAST_PROP];
 	bool localEchoEnabled;
-	Value m_names[LAST_PROP];
+	//Value m_names[LAST_PROP];
 };
 

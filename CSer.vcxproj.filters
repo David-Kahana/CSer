@@ -33,9 +33,6 @@
     <ClInclude Include="SerialPortSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JsonSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="FileUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,9 +51,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SerialPortSettings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="JsonSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FileUtil.cpp">

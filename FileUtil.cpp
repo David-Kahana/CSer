@@ -88,23 +88,29 @@ int CFileUtil::readFromFile(const wchar_t* fileName, char** buffer, unsigned int
 	if (sret == FALSE)
 	{
 		CloseHandle(hfile);
-		return -1;
+		return -2;
 	}
-	long long bufSize = li.QuadPart;
+	LONGLONG bufSize = li.QuadPart;
+	if (bufSize > (LONGLONG)MAXDWORD - 1)
+	{ //too big, not implemented yet
+		CloseHandle(hfile);
+		return -3;
+	}
 	char* inBuf = nullptr;
 	inBuf = new char[bufSize + 1];
 	if (inBuf == nullptr)
 	{
 		CloseHandle(hfile);
-		return -2;
+		return -4;
 	}
 	DWORD dwBytesRead = 0;
-	BOOL rret = ReadFile(hfile, inBuf, bufSize, &dwBytesRead, NULL);
+	
+	BOOL rret = ReadFile(hfile, inBuf, (DWORD)bufSize, &dwBytesRead, NULL);
 	if (rret == FALSE || dwBytesRead != (DWORD)bufSize)
 	{
 		delete[]inBuf;
 		CloseHandle(hfile);
-		return -2;
+		return -5;
 	}
 	inBuf[bufSize] = 0;
 	*buffer = inBuf;

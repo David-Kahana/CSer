@@ -58,7 +58,6 @@ int CSerialPortsMngt::scanPorts()
             if (m_removedPorts[num] == nullptr) // port not in removed ports
             {
                 m_currentPorts[num] = port;
-                m_currentPorts[num]->getPortCapabilities();
             }
             else
             {
@@ -72,7 +71,6 @@ int CSerialPortsMngt::scanPorts()
                 {
                     m_currentPorts[num] = port;
                     delete m_removedPorts[num];
-                    m_currentPorts[num]->getPortCapabilities();
                 }
                 m_removedPorts[num] = nullptr;
             }
@@ -83,7 +81,6 @@ int CSerialPortsMngt::scanPorts()
             {
                 delete m_currentPorts[num];
                 m_currentPorts[num] = port;
-                m_currentPorts[num]->getPortCapabilities();
             }
             else
             {
@@ -135,6 +132,25 @@ int CSerialPortsMngt::listPorts()
     return OK;
 }
 
+int CSerialPortsMngt::listPortsAndSettings()
+{
+	for (int i = 0; i < MAX_NUMBER_OF_PORTS; ++i)
+	{
+		if (m_currentPorts[i] != nullptr)
+		{
+			wprintf_s(L"COM%d : %s  ", m_currentPorts[i]->getPortNumber(), m_currentPorts[i]->getFriendlyNameW().c_str());
+			m_currentPorts[i]->open();
+			Sleep(300);
+			m_currentPorts[i]->getPortSettings();
+			m_currentPorts[i]->printPortSettings();
+			m_currentPorts[i]->close();
+			
+			wprintf_s(L"\n");
+		}
+	}
+	return OK;
+}
+
 /**********************************************************************************************//**
  * @fn CSerialPort* CSerialPortsMngt::getPortByNumber(int num)
  *
@@ -154,67 +170,6 @@ CSerialPort* CSerialPortsMngt::getPortByNumber(int num)
         return nullptr;
     }
     return m_currentPorts[num];
-}
-
-int CSerialPortsMngt::saveJson()
-{
-    Document d;
-    StringBuffer buffer;
-    int ret = 0;
-    d.SetObject();
-    Value ports;
-    ports.SetArray();
-    for (int i = 0; i < MAX_NUMBER_OF_PORTS; ++i)
-    {
-        if (m_currentPorts[i] != nullptr)
-        {
-            Value port;
-            port.SetObject();
-            ret = m_currentPorts[i]->toJsonObject(d, port);
-            ports.PushBack(port, d.GetAllocator());
-        }
-    }
-    d.AddMember("Ports", ports, d.GetAllocator());
-    PrettyWriter<StringBuffer> writer(buffer);
-    d.Accept(writer);
-    printf_s("%s\n", buffer.GetString());
-    wstring filename(L"PortSettings.json");
-    CFileUtil::writeToFile(filename, buffer.GetString(), (unsigned int)buffer.GetSize());
-    return OK;
-}
-
-int CSerialPortsMngt::loadJson()
-{
-    char* buf = nullptr;
-    unsigned int bufSize = 0;
-    int retr = CFileUtil::readFromFile(CJsonSettings::getInstance().getFileName(), &buf, bufSize);
-    printf_s("\nJson Loaded \n\n");
-    //printf_s("JsonLoaded: \n %s\n\n", buf);
-
-    Document d;
-    d.Parse(buf);
-    Type tp = d.GetType();
-
-    if (!d.IsObject())
-    {
-        return -1;
-    }
-    if (!d.HasMember("Ports"))
-    {
-        return -2;
-    }
-    const Value& jports = d["Ports"];
-    if (!jports.IsArray())
-    {
-        return -3;
-    }
-    for (SizeType i = 0; i < jports.Size(); i++) // Uses SizeType instead of size_t
-    {
-        const Value& jport = jports[i];
-        printf_s("\n%s\n", jport["PortFriendlyName"].GetString());
-    }
-
-    return OK;
 }
 
 int CSerialPortsMngt::findInVect(CSerialPort* port, vector<CSerialPort*>& portVect)

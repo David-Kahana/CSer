@@ -4,14 +4,12 @@
 
 CSerialPort::CSerialPort(unsigned int number, wstring friendlyName): m_portNumber(number), m_friendlyName(friendlyName)
 {
-	//int ret = setPortName();
 }
 
 CSerialPort::CSerialPort(unsigned int number, string friendlyName) : m_portNumber(number)
 {
 	CA2W ca2w(friendlyName.c_str());
 	m_friendlyName = ca2w;
-	//int ret = setPortName();
 }
 
 CSerialPort::~CSerialPort()
@@ -48,17 +46,7 @@ wstring CSerialPort::getFriendlyNameW()
 	return m_friendlyName;
 }
 
-CSerialPortSettings& CSerialPort::getPortSettingsRef()
-{
-	return m_portSettings;
-}
-
-CSerialPortSettings* CSerialPort::getPortSettingsPtr()
-{
-	return &(m_portSettings);
-}
-
-int CSerialPort::openPort()
+int CSerialPort::open()
 {
 	int ret = setPortName();
 	if (ret != OK)
@@ -77,94 +65,71 @@ int CSerialPort::openPort()
 		wprintf_s(L"error: openning port : %s\n", m_portName);
 		return -3;
 	}
-	wprintf_s(L"port %s opened!\n", m_portName);
+	//wprintf_s(L"port %s opened!\n", m_portName);
 	return OK;
 }
 
-int CSerialPort::closePort()
+int CSerialPort::close()
 {
 	if (CloseHandle(m_hComm) != TRUE)
 	{
 		wprintf_s(L"error: problem closing port : %s\n", m_portName);
 		return -1;
 	}
-	wprintf_s(L"port %s closed!\n", m_portName);
+	//wprintf_s(L"port %s closed!\n", m_portName);
+	m_hComm = INVALID_HANDLE_VALUE;
 	return OK;
 }
 
 int CSerialPort::getPortSettings() //win32 side
 {
+	if (m_hComm == INVALID_HANDLE_VALUE)
+	{
+		wprintf_s(L"Port is not open or could not be opened\n");
+		return -1;
+	}
 	SecureZeroMemory(&m_dcb, sizeof(DCB));//  Initialize the DCB structure.
 	m_dcb.DCBlength = sizeof(DCB);
 	BOOL fSuccess = GetCommState(m_hComm, &m_dcb);//  retrieving all current settings
 	if (fSuccess != TRUE)
 	{//  Handle the error.
 		wprintf_s(L"GetCommState failed with error %d.\n", GetLastError());
-		return -1;
-	}
-
-	wprintf_s(L"\nBaudRate = %d, ByteSize = %d, Parity = %d, StopBits = %d\n", m_dcb.BaudRate, m_dcb.ByteSize, m_dcb.Parity, m_dcb.StopBits); //Output to console
-
-	wprintf_s(L"got settings for port: %s\n", m_portName);
-	return OK;
-}
-
-int CSerialPort::toJsonObject(Document& jsonDoc, Value& portJsonObj)
-{
-	Value portName;
-	std::string port_name = "COM";
-	port_name += std::to_string(m_portNumber);
-	portName.SetString(port_name.c_str(), jsonDoc.GetAllocator());
-
-	Value portfName;
-	using convert_type = std::codecvt_utf8<wchar_t>;
-	wstring_convert<convert_type, wchar_t> converter;
-	string port_fname = converter.to_bytes(m_friendlyName);
-	port_fname.push_back(0);
-	portfName.SetString(port_fname.c_str(), jsonDoc.GetAllocator());
-
-	if (portJsonObj.HasMember("PortName"))
-	{
-		portJsonObj["PortName"] = portName;
-	}
-	else
-	{
-		portJsonObj.AddMember("PortName", portName, jsonDoc.GetAllocator());
-	}
-	if (portJsonObj.HasMember("PortFriendlyName"))
-	{
-		portJsonObj["PortFriendlyName"] = portfName;
-	}
-	else
-	{
-		portJsonObj.AddMember("PortFriendlyName", portfName, jsonDoc.GetAllocator());
-	}
-	int ret = m_portSettings.toJsonObject(jsonDoc, portJsonObj);
-	return OK;
-}
-
-int CSerialPort::getPortCapabilities()
-{
-	int ret = 0;
-	_COMMPROP comProp;
-	HANDLE hComm;
-	std::wstring portName = L"\\\\.\\COM";
-	portName += std::to_wstring(m_portNumber);
-	//port name //Read/Write // No Sharing // No Security// Open existing port only// Non Overlapped I/O// Null for Comm Devices
-	hComm = CreateFile(portName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
-	if (hComm == INVALID_HANDLE_VALUE)
-	{
-		return -1;
-	}
-	ret = GetCommProperties(hComm, &comProp);
-	if (ret == 0)
-	{
-		CloseHandle(hComm);//Closing the Serial Port
 		return -2;
 	}
-	ret = m_portSettings.setSettables(comProp);
-	CloseHandle(hComm);//Closing the Serial Port
-	return ret;
+	//wprintf_s(L"\nBaudRate = %d, ByteSize = %d, Parity = %d, StopBits = %d\n", m_dcb.BaudRate, m_dcb.ByteSize, m_dcb.Parity, m_dcb.StopBits); //Output to console
+	//wprintf_s(L"got settings for port: %s\n", m_portName);
+	return OK;
+}
+
+int CSerialPort::setPortSettings(wchar_t* comSettings) //win32 side - dcb
+{
+	if (m_hComm == INVALID_HANDLE_VALUE)
+	{
+		wprintf_s(L"Port is not open or could not be opened\n");
+		return -1;
+	}
+	if (!BuildCommDCB(comSettings, &m_dcb))
+	{
+		// Couldn't build the DCB. Usually a problem
+		// with the communications specification string.
+		wprintf_s(L"Couldn't build the DCB\n");
+		return -3;
+	}
+	// DCB is ready for use.       
+	//printf_s("DCB built\n");
+	if (!SetCommState(m_hComm, &m_dcb))
+	{   // Error in SetCommState. Possibly a problem with the communications 
+		// port handle or a problem with the DCB structure itself.
+		wprintf_s(L"Error in SetCommState\n");
+		return -4;
+	}	       
+	return OK;
+}
+
+int CSerialPort::printPortSettings()
+{
+	wprintf_s(L"BaudRate = %d, ByteSize = %d, Parity = %d, StopBits = %d", m_dcb.BaudRate, m_dcb.ByteSize, m_dcb.Parity, m_dcb.StopBits); //Output to console
+	return OK;
 }
 
 int CSerialPort::setPortName()

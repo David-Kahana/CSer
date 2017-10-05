@@ -1,6 +1,6 @@
 #pragma once
 
-#include "SerialPortSettings.h"
+#include "FileUtil.h"
 #define MAX_NUMBER_OF_PORTS 256
 using namespace std;
 
@@ -16,19 +16,16 @@ public:
 	bool isSmaller(CSerialPort* other);
 	int getPortNumber();
 	wstring getFriendlyNameW();
-	int getPortCapabilities();
-	CSerialPortSettings& getPortSettingsRef();
-	CSerialPortSettings* getPortSettingsPtr();
-	int openPort();
-	int closePort();
-	int getPortSettings(); //win32 side
-	int toJsonObject(Document& jsonDoc, Value& portJsonObj);
+	int open();
+	int close();
+	int getPortSettings(); //win32 side - dcb
+	int setPortSettings(wchar_t* comSettings); //win32 side - dcb
+	int printPortSettings(); //win32 side - dcb
 private:
 	UINT m_portNumber;
 	wchar_t m_portName[12];
 	wstring m_friendlyName;
-	CSerialPortSettings m_portSettings;
-	HANDLE m_hComm;
+	HANDLE m_hComm = INVALID_HANDLE_VALUE;
 	DCB m_dcb;
 private:
 	int setPortName();

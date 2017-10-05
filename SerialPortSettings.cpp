@@ -60,10 +60,10 @@ CSerialPortSettings::CSerialPortSettings()
 	m_propertiesIndex[STOP_BITS] = 0;
 	m_propertiesIndex[FLOW_CONTROL] = 0;
 	m_propertiesIndex[DATA_BITS] = 3;
-	for (int i = 0; i < LAST_PROP; ++i)
-	{
-		m_names[i] = StringRef(propsNames[i]);
-	}
+	//for (int i = 0; i < LAST_PROP; ++i)
+	//{
+		//m_names[i] = StringRef(propsNames[i]);
+	//}
 }
 
 CSerialPortSettings::~CSerialPortSettings()
@@ -154,27 +154,27 @@ int CSerialPortSettings::props2DCB(DCB& dcb)
 	return OK;
 }
 
-int CSerialPortSettings::toJsonObject(Document& jsonDoc, Value& portJsonObj)
-{
-	Value values[LAST_PROP];
-	values[BAUD_RATE].SetUint((unsigned int)baudRatesDCB[m_propertiesIndex[BAUD_RATE]]);
-	values[PARITY].SetString(parityStringsAlt[m_propertiesIndex[PARITY]].c_str(), jsonDoc.GetAllocator());
-	values[STOP_BITS].SetFloat(stopBitsNum[m_propertiesIndex[STOP_BITS]]);
-	values[FLOW_CONTROL].SetString(flowControlDCBStrings[m_propertiesIndex[FLOW_CONTROL]].c_str(), jsonDoc.GetAllocator());
-	values[DATA_BITS].SetUint((unsigned int)dataBitsDCB[m_propertiesIndex[DATA_BITS]]);
-	for (int i = 0; i < LAST_PROP; ++i)
-	{
-		if (portJsonObj.HasMember(m_names[i]))
-		{
-			portJsonObj[m_names[i]] = values[i];
-		}
-		else
-		{
-			portJsonObj.AddMember(m_names[i], values[i], jsonDoc.GetAllocator());
-		}
-	}
-	return OK;
-}
+//int CSerialPortSettings::toJsonObject(Document& jsonDoc, Value& portJsonObj)
+//{
+//	Value values[LAST_PROP];
+//	values[BAUD_RATE].SetUint((unsigned int)baudRatesDCB[m_propertiesIndex[BAUD_RATE]]);
+//	values[PARITY].SetString(parityStringsAlt[m_propertiesIndex[PARITY]].c_str(), jsonDoc.GetAllocator());
+//	values[STOP_BITS].SetFloat(stopBitsNum[m_propertiesIndex[STOP_BITS]]);
+//	values[FLOW_CONTROL].SetString(flowControlDCBStrings[m_propertiesIndex[FLOW_CONTROL]].c_str(), jsonDoc.GetAllocator());
+//	values[DATA_BITS].SetUint((unsigned int)dataBitsDCB[m_propertiesIndex[DATA_BITS]]);
+//	for (int i = 0; i < LAST_PROP; ++i)
+//	{
+//		if (portJsonObj.HasMember(m_names[i]))
+//		{
+//			portJsonObj[m_names[i]] = values[i];
+//		}
+//		else
+//		{
+//			portJsonObj.AddMember(m_names[i], values[i], jsonDoc.GetAllocator());
+//		}
+//	}
+//	return OK;
+//}
 
 int CSerialPortSettings::copyUCHARVector(vector<unsigned char>& src, vector<unsigned char>& dst)
 {
